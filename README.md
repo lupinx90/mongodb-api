@@ -3,7 +3,7 @@
 
 Esta API de prueba con MongoDB driver para NodeJS, implementa una simple API CRUD. Para ejecutar en local, nos descargamos el repositorio y si tenemos NodeJS y Node Package Manager instalados, ejecutamos los siguientes comandos en la carpeta base del proyecto:
 
-npm i
+npm i,
 npm run dev
 
 Una vez nuestra aplicación en funcionamiento podremos interactuar con la API en los siguientes endpoints:
