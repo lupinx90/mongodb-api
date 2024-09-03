@@ -2,16 +2,16 @@
 ## Introducción
 
 Esta API de prueba con MongoDB driver para NodeJS, implementa una simple API CRUD. Para ejecutar en local, nos descargamos el repositorio y si tenemos NodeJS y Node Package Manager instalados, ejecutamos los siguientes comandos en la carpeta base del proyecto:
-
-npm i,
+```
+npm i
 npm run dev
-
+```
 Una vez nuestra aplicación en funcionamiento podremos interactuar con la API en los siguientes endpoints:
 
 ### products	"https://localhost:3000/api/products"
 
 CREATE
-
+```
 POST "https://localhost:3000/api/products"
 BODY EXAMPLE
 {
@@ -19,13 +19,13 @@ BODY EXAMPLE
   "precio": 15,
   "cantidad": 179
 }
-
+```
 READ
-
+```
 GET "https://localhost:3000/api/products"
-
+```
 UPDATE
-
+```
 POST "https://localhost:3000/api/products/update"
 BODY EXAMPLE
 {
@@ -34,28 +34,28 @@ BODY EXAMPLE
   "precio": 18,
   "cantidad": 103
 }
-
+```
 DELETE
-
+```
 GET "https://localhost:3000/api/products/delete/<id>"
-
+```
 ### users	"https://localhost:3000/api/users"
 
 CREATE
-
+```
 POST "https://localhost:3000/api/users"
 BODY EXAMPLE
 {
   "name": "Luis Lupiáñez",
   "email": "luisg.lupi@gmail.com"
 }
-
+```
 READ
-
+```
 GET "https://localhost:3000/api/users"
-
+```
 UPDATE
-
+```
 POST "https://localhost:3000/api/users/update"
 BODY EXAMPLE
 {
@@ -63,15 +63,15 @@ BODY EXAMPLE
   "name": "Luis Lupiáñez2",
   "email": "luisg.lupi@misitio.com"
 }
-
+```
 DELETE
-
+```
 GET "https://localhost:3000/api/users/delete/<id>"
-
+```
 ### sales	"https://localhost:3000/api/sales"
 
 CREATE
-
+```
 POST "https://localhost:3000/api/sales"
 BODY EXAMPLE
 {
@@ -87,13 +87,13 @@ BODY EXAMPLE
   ],
   "user_id": "66bf754a782d0adec28be1a0"
 }
-
+```
 READ
-
+```
 GET "https://localhost:3000/api/sales"
-
+```
 UPDATE
-
+```
 POST "https://localhost:3000/api/sales/update"
 BODY EXAMPLE
 {
@@ -109,7 +109,8 @@ BODY EXAMPLE
   }
   ]
 }
-
+```
 DELETE
-
+```
 GET "https://localhost:3000/api/sales/delete/<id>"
+```
