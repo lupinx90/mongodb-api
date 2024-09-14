@@ -23,12 +23,10 @@ const create = async (user) => {
 }
 
 // update
-const update = async (user) => {
+const update = async (id, body) => {
     const collection = await Database(COLLECTION);
-    const userId = user._id;
-    const filter = { _id: new ObjectId(userId) };
-    delete user._id;
-    return await collection.findOneAndUpdate(filter, {$set: user}, {returnDocument: 'after'});
+    const filter = { _id: new ObjectId(id) };
+    return await collection.findOneAndUpdate(filter, {$set: body}, {returnDocument: 'after'});
 }
 // delete
 const deleteUser = async (id) => {
