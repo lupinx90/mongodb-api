@@ -22,14 +22,13 @@ BODY EXAMPLE
 ```
 READ
 ```
-GET "https://localhost:3000/api/products"
+GET "https://localhost:3000/api/products/<id>"
 ```
 UPDATE
 ```
-POST "https://localhost:3000/api/products/update"
+PUT "https://localhost:3000/api/products/<id>"
 BODY EXAMPLE
 {
-  "_id": "66be34f82a6a9aa1b1214a38",
   "name": "camisetas deluxe",
   "precio": 18,
   "cantidad": 103
@@ -37,7 +36,7 @@ BODY EXAMPLE
 ```
 DELETE
 ```
-GET "https://localhost:3000/api/products/delete/<id>"
+DELETE "https://localhost:3000/api/products/<id>"
 ```
 ### users	"https://localhost:3000/api/users"
 
@@ -52,21 +51,20 @@ BODY EXAMPLE
 ```
 READ
 ```
-GET "https://localhost:3000/api/users"
+GET "https://localhost:3000/api/users/<id>"
 ```
 UPDATE
 ```
-POST "https://localhost:3000/api/users/update"
+PUT "https://localhost:3000/api/users/<id>"
 BODY EXAMPLE
 {
-  "_id": "66bf754a782d0adec28be1a0",
   "name": "Luis Lupiáñez2",
   "email": "luisg.lupi@misitio.com"
 }
 ```
 DELETE
 ```
-GET "https://localhost:3000/api/users/delete/<id>"
+DELETE "https://localhost:3000/api/users/<id>"
 ```
 ### sales	"https://localhost:3000/api/sales"
 
@@ -90,14 +88,14 @@ BODY EXAMPLE
 ```
 READ
 ```
-GET "https://localhost:3000/api/sales"
+GET "https://localhost:3000/api/sales/<id>"
 ```
 UPDATE
 ```
-POST "https://localhost:3000/api/sales/update"
+PUT "https://localhost:3000/api/sales/<id>"
 BODY EXAMPLE
 {
-  "_id": "66d6e35bf10435eadcfbe5f2",
+  "user_id": "66bf754a782d0adec28be1a0",
   "products": [
   {
     "qty": 6,
@@ -112,5 +110,5 @@ BODY EXAMPLE
 ```
 DELETE
 ```
-GET "https://localhost:3000/api/sales/delete/<id>"
+DELETE "https://localhost:3000/api/sales/<id>"
 ```

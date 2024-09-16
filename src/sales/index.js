@@ -10,8 +10,8 @@ module.exports.SalesAPI = (app) => {
     .get("/:id", SalesController.getSale) // http://localhost:3000/api/sales/11
     .post("/", SalesController.createSale)
     // update
-    .post("/update", SalesController.updateSale)
+    .put("/:id", SalesController.updateSale)
     // delete
-    .get("/delete/:id", SalesController.deleteSale) // http://localhost:3000/api/sales/delete/11
+    .delete("/:id", SalesController.deleteSale) // http://localhost:3000/api/sales/delete/11
   app.use("/api/sales", router);
 };

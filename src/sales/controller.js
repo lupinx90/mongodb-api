@@ -1,12 +1,15 @@
 const debug = require("debug")("app:module-sales-controller");
 const createError = require("http-errors");
 
-const { ObjectId } = require("mongodb");
-
 const { SalesService } = require("./services");
 const { UsersService } = require("../users/services");
 const { ProductsService } = require("../products/services");
 const { Response } = require("../common/response");
+const { Config } = require("../config");
+
+const PRODUCT_ALLOWED_PROPERTIES = ["product_id", "qty"];
+const SALE_ALLOWED_PROPERTIES = ["user_id", "products"];
+const MONGO_ID_LENGTH = +Config.mongoIdLength;
 
 module.exports.SalesController = {
   getSales: async (req, res) => {
@@ -36,47 +39,66 @@ module.exports.SalesController = {
     try {
       const { body } = req;
       const userId = body.user_id;
-      const products = body.products;
-      if (userId.length !== 24) {
+      if (userId.length !== MONGO_ID_LENGTH) {
         Response.error(res, {
           statusCode: 400,
-          message:
-            "El usuario indicado no tiene la longitud necesaria - 24 caracteres",
+          message: "El usuario indicado no tiene el formato correcto",
         });
       } else {
         let user = await UsersService.getById(userId.toString());
+        const products = body.products;
         let productsInJSON = products && products.length >= 1 ? true : false;
-        debug(user);
-        debug(productsInJSON);
-        if (!user || !productsInJSON) {
+        const salePropertyKeys = Object.keys(body);
+        const wrongSaleKeyIndex = salePropertyKeys.findIndex(
+          (key) => !SALE_ALLOWED_PROPERTIES.includes(key)
+        );
+        if (
+          !user ||
+          !productsInJSON ||
+          salePropertyKeys.length !== SALE_ALLOWED_PROPERTIES.length ||
+          wrongSaleKeyIndex !== -1
+        ) {
           Response.error(res, {
-            statusCode: 404,
+            statusCode: 400,
             message:
-              "El usuario indicado no existe o no se han detectado productos",
+              "El usuario indicado no existe, no se han detectado productos o bien se ha detectado un payload incorrecto",
           });
         } else {
-          let productNotFound = false;
-          products.forEach(async (item, i, array) => {
+          let wrongProduct = false;
+          const promises = products.map(async (item) => {
             let itemId = item.product_id;
-            debug(itemId);
-            if (itemId.length === 24) {
-              let product = await ProductsService.getById(itemId.toString());
-              if (!product) {
-                productNotFound = true;
-              }
+            const productPropertyKeys = Object.keys(item);
+            const wrongProductKeyIndex = productPropertyKeys.findIndex(
+              (key) => !PRODUCT_ALLOWED_PROPERTIES.includes(key)
+            );
+            if (
+              itemId.length !== MONGO_ID_LENGTH ||
+              productPropertyKeys.length !==
+                PRODUCT_ALLOWED_PROPERTIES.length ||
+              wrongProductKeyIndex !== -1
+            ) {
+              wrongProduct = true;
             } else {
-              productNotFound = true;
+              const item = await ProductsService.getById(itemId);
+              if (!item) wrongProduct = true;
             }
           });
-          debug(productNotFound);
-          if (productNotFound) {
+          await Promise.all(promises);
+          if (wrongProduct) {
             Response.error(res, {
-              statusCode: 404,
-              message: "Alguno de los productos no se ha encontrado",
+              statusCode: 400,
+              message: "Alguno de los productos tiene un payload incorrecto",
             });
           } else {
-            const insertedId = await SalesService.create(body);
-            Response.success(res, 201, `Venta agregada con éxito`, insertedId);
+            const sale = await SalesService.create(body);
+            if (!sale) {
+              Response.error(res, {
+                statusCode: 400,
+                message: "Alguno de los productos tiene un payload incorrecto",
+              });
+            } else {
+              Response.success(res, 201, `Venta agregada con éxito`, sale);
+            }
           }
         }
       }
@@ -88,18 +110,79 @@ module.exports.SalesController = {
   // update
   updateSale: async (req, res) => {
     try {
+      const updatedId = req.params.id;
       const { body } = req;
-      const updatedId =
-        body._id && body._id.toString().length === 24
-          ? body._id.toString()
-          : null;
-      if (!body || Object.keys(body).length <= 1 || !updatedId) {
-        Response.error(res, new createError.BadRequest());
+      const { products, user_id } = body;
+      const salePropertyKeys = Object.keys(body);
+      const wrongSaleKeyIndex = salePropertyKeys.findIndex(
+        (key) => !SALE_ALLOWED_PROPERTIES.includes(key)
+      );
+      if (
+        !body ||
+        Object.keys(body).length < 1 ||
+        wrongSaleKeyIndex !== -1 ||
+        !updatedId ||
+        updatedId.length !== MONGO_ID_LENGTH
+      ) {
+        Response.error(
+          res,
+          new createError.BadRequest("El payload no es correcto")
+        );
       } else {
-        const updatedSale = await SalesService.update(body);
-        debug(body);
+        if (user_id) {
+          if (user_id.length !== MONGO_ID_LENGTH) {
+            Response.error(res, {
+              statusCode: 400,
+              message:
+                "El id de usuario proporcionado no tiene la longitud correcta",
+            });
+            return;
+          } else {
+            const user = await UsersService.getById(user_id);
+            if (!user) {
+              Response.error(res, {
+                statusCode: 400,
+                message: "El usuario indicado no existe en la base de datos",
+              });
+              return;
+            }
+          }
+        }
+        if (products) {
+          let wrongProduct = false;
+          const promises = products.map(async (item) => {
+            let itemId = item.product_id;
+            const productPropertyKeys = Object.keys(item);
+            const wrongProductKeyIndex = productPropertyKeys.findIndex(
+              (key) => !PRODUCT_ALLOWED_PROPERTIES.includes(key)
+            );
+            if (
+              itemId.length !== MONGO_ID_LENGTH ||
+              productPropertyKeys.length !==
+                PRODUCT_ALLOWED_PROPERTIES.length ||
+              wrongProductKeyIndex !== -1
+            ) {
+              wrongProduct = true;
+            } else {
+              const item = await ProductsService.getById(itemId);
+              if (!item) wrongProduct = true;
+            }
+          });
+          await Promise.all(promises);
+          if (wrongProduct) {
+            Response.error(res, {
+              statusCode: 400,
+              message: "Alguno de los productos tiene un payload incorrecto",
+            });
+            return;
+          }
+        }
+        const updatedSale = await SalesService.update(updatedId, body);
         if (!updatedSale) {
-          Response.error(res, new createError.NotFound());
+          Response.error(
+            res,
+            new createError.NotFound("No se ha podido actualizar el pedido")
+          );
         } else {
           Response.success(
             res,
@@ -119,7 +202,7 @@ module.exports.SalesController = {
     try {
       const id = req.params.id;
       debug(id);
-      if (!id || id.length !== 24) {
+      if (!id || id.length !== MONGO_ID_LENGTH) {
         Response.error(res, new createError.BadRequest());
       } else {
         const deletedSale = await SalesService.deleteSale(id);
