@@ -39,9 +39,10 @@ const create = async (sale) => {
       _id: new ObjectId(productId),
     });
     if (item) {
-      const qty = product.qty;
+      const qty = Math.min(product.qty, item.cantidad);
       const price = item.precio;
       const line_total = qty * price;
+      sale.products[i].qty = qty;
       sale.products[i].line_total = line_total;
       sale.total += line_total;
       await productsCollection.updateOne(
@@ -85,14 +86,17 @@ const update = async (id, sale) => {
       let productIndex = origSale.products.findIndex(
         (product) => product.product_id.oid.toString() === productId
       );
-      productsCollection.updateOne(
+      let stockAdjustment = origSale.products[productIndex].qty - qty;
+      let stock = item.cantidad;
+      let finalStockAdjustment = (stock + stockAdjustment >= 0) ? stockAdjustment : -stock;
+      await productsCollection.updateOne(
         { _id: new ObjectId(productId) },
-        { $inc: { cantidad: origSale.products[productIndex].qty - qty } }
+        { $inc: { cantidad: finalStockAdjustment } }
       );
-      modifiedSale.products[productIndex].qty = qty;
       const old_line_total = origSale.products[productIndex].line_total;
       const new_line_total = qty * item.precio;
       const total_adjustment = new_line_total - old_line_total;
+      modifiedSale.products[productIndex].qty = origSale.products[productIndex].qty - finalStockAdjustment;
       modifiedSale.products[productIndex].line_total = new_line_total;
       modifiedSale.total = modifiedSale.total + total_adjustment;
     });

@@ -201,7 +201,6 @@ module.exports.SalesController = {
   deleteSale: async (req, res) => {
     try {
       const id = req.params.id;
-      debug(id);
       if (!id || id.length !== MONGO_ID_LENGTH) {
         Response.error(res, new createError.BadRequest());
       } else {
